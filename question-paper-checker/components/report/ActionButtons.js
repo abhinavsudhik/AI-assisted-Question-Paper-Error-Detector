@@ -1,3 +1,5 @@
+'use client';   
+
 export default function ActionButtons() {
   const handleDownloadPDF = () => {
     alert('Downloading PDF report...');
