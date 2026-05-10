@@ -84,6 +84,6 @@ export default function InputForm() {
           {isAnalyzing ? 'Analysing...' : 'Analyse Paper'}
         </button>
       </div>
-    </div>
+    
   );
 }
