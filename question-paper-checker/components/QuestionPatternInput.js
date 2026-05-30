@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import UploadBox from './UploadBox';
 
-export default function QuestionPatternInput() {
+export default function QuestionPatternInput({ onPatternChange }) {
   const [inputMode, setInputMode] = useState('upload');
   const [sections, setSections] = useState(1);
   const [sectionData, setSectionData] = useState([
@@ -11,7 +11,7 @@ export default function QuestionPatternInput() {
   ]);
 
   const handleFileUpload = (files) => {
-    // Handle pattern file upload
+    if (onPatternChange) onPatternChange(files[0]);
   };
 
   const addSection = () => {
@@ -30,6 +30,13 @@ export default function QuestionPatternInput() {
     const updated = [...sectionData];
     updated[index] = { ...updated[index], [field]: value };
     setSectionData(updated);
+    if (onPatternChange) onPatternChange(buildPatternString(updated));
+  };
+
+  const buildPatternString = (data) => {
+    return data
+      .map((s, i) => `Section ${i + 1}: ${s.questionType}, ${s.marks} mark(s) per question`)
+      .join('\n');
   };
 
   return (
@@ -45,12 +52,10 @@ export default function QuestionPatternInput() {
               onChange={(e) => setInputMode(e.target.checked ? 'form' : 'upload')}
               className="sr-only"
             />
-            <div className={`w-11 h-6 rounded-full transition-colors ${
-              inputMode === 'form' ? 'bg-primary' : 'bg-gray-300'
-            }`}></div>
-            <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-              inputMode === 'form' ? 'translate-x-5' : ''
-            }`}></div>
+            <div className={`w-11 h-6 rounded-full transition-colors ${inputMode === 'form' ? 'bg-primary' : 'bg-gray-300'
+              }`}></div>
+            <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${inputMode === 'form' ? 'translate-x-5' : ''
+              }`}></div>
           </div>
         </label>
       </div>

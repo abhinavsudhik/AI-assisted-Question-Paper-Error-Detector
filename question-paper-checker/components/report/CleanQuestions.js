@@ -1,10 +1,9 @@
-export default function CleanQuestions() {
-  const cleanQuestions = ['Q1', 'Q8', 'Q12', 'Q15'];
+export default function CleanQuestions({ cleanQuestions }) {
 
   return (
     <div className="mb-10 bg-card rounded-2xl shadow-sm border border-border p-8">
       <h2 className="text-2xl font-bold text-foreground mb-6">Questions with No Errors</h2>
-      
+
       <div className="flex flex-wrap gap-3">
         {cleanQuestions.map((question, index) => (
           <span
@@ -15,7 +14,7 @@ export default function CleanQuestions() {
           </span>
         ))}
       </div>
-      
+
       <p className="text-gray-600 text-sm mt-6">
         These questions are well-formed and meet all requirements.
       </p>

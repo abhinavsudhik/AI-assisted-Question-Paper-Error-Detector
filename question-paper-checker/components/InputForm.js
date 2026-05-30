@@ -1,35 +1,66 @@
 'use client';
-
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import UploadBox from './UploadBox';
 import SyllabusTabs from './SyllabusTabs';
 import QuestionPatternInput from './QuestionPatternInput';
 
 export default function InputForm() {
+  const router = useRouter();
+  const [questionPaperFile, setQuestionPaperFile] = useState(null);
+  const [syllabusValue, setSyllabusValue] = useState(null);
+  const [patternValue, setPatternValue] = useState(null);
   const [totalMarks, setTotalMarks] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const handleQuestionPaperUpload = (files) => {
-    // Handle question paper file upload
-  };
-
   const handleAnalyse = async () => {
+    if (!questionPaperFile) {
+      alert('Please upload a question paper');
+      return;
+    }
     if (!totalMarks) {
       alert('Please enter total marks');
       return;
     }
     setIsAnalyzing(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append('questionPaper', questionPaperFile);
+      formData.append('totalMarks', totalMarks);
+
+      if (syllabusValue instanceof File) {
+        formData.append('syllabus', syllabusValue);
+      } else {
+        formData.append('syllabus', syllabusValue ?? '');
+      }
+
+      if (patternValue instanceof File) {
+        formData.append('pattern', patternValue);
+      } else if (patternValue) {
+        formData.append('pattern', JSON.stringify(patternValue));
+      }
+
+      const response = await fetch('/api/analyse', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Analysis failed');
+
+      const result = await response.json();
+      localStorage.setItem('reportData', JSON.stringify(result.data));
+      router.push('/report');
+    } catch (error) {
+      alert('Something went wrong. Please try again.');
+      console.error(error);
+    } finally {
       setIsAnalyzing(false);
-      alert('Analysis started! Results will be displayed shortly.');
-    }, 1000);
+    }
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-border p-8">
       <div className="space-y-8">
-        {/* Question Paper Upload */}
         <div>
           <label className="block text-sm font-semibold text-foreground mb-4">
             Question Paper <span className="text-error">*</span>
@@ -37,20 +68,18 @@ export default function InputForm() {
           <UploadBox
             title="Upload Question Paper"
             formats={['PDF', 'JPG', 'PNG', 'DOCX']}
-            onFilesSelected={handleQuestionPaperUpload}
+            onFilesSelected={(files) => setQuestionPaperFile(files[0])}
             isLarge={true}
           />
         </div>
 
-        {/* Syllabus Input */}
         <div>
           <label className="block text-sm font-semibold text-foreground mb-4">
-            Syllabus <span className="text-error">*</span>
+            Syllabus
           </label>
-          <SyllabusTabs />
+          <SyllabusTabs onSyllabusChange={setSyllabusValue} />
         </div>
 
-        {/* Total Marks */}
         <div>
           <label htmlFor="totalMarks" className="block text-sm font-semibold text-foreground mb-2">
             Total Marks <span className="text-error">*</span>
@@ -66,20 +95,17 @@ export default function InputForm() {
           />
         </div>
 
-        {/* Question Pattern */}
         <div>
-          <QuestionPatternInput />
+          <QuestionPatternInput onPatternChange={setPatternValue} />
         </div>
 
-        {/* Analyse Button */}
         <button
           onClick={handleAnalyse}
           disabled={isAnalyzing}
-          className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all ${
-            isAnalyzing
+          className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all ${isAnalyzing
               ? 'bg-primary/80 opacity-80 cursor-not-allowed'
               : 'bg-primary hover:bg-opacity-90 active:scale-95'
-          }`}
+            }`}
         >
           {isAnalyzing ? 'Analysing...' : 'Analyse Paper'}
         </button>

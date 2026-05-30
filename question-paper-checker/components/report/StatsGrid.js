@@ -1,9 +1,9 @@
-export default function StatsGrid() {
+export default function StatsGrid({ totalErrors, critical, warnings, suggestions }) {
   const stats = [
-    { label: 'Total Errors Found', value: '12', color: 'text-error' },
-    { label: 'Critical', value: '3', color: 'text-error' },
-    { label: 'Warnings', value: '6', color: 'text-amber-500' },
-    { label: 'Suggestions', value: '3', color: 'text-blue-500' },
+    { label: 'Total Errors Found', value: String(totalErrors), color: 'text-error' },
+    { label: 'Critical', value: String(critical), color: 'text-error' },
+    { label: 'Warnings', value: String(warnings), color: 'text-amber-500' },
+    { label: 'Suggestions', value: String(suggestions), color: 'text-blue-500' },
   ];
 
   return (

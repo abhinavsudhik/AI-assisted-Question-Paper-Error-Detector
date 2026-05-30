@@ -1,18 +1,11 @@
-export default function ErrorBreakdownChart() {
-  const categories = [
-    { label: 'Language', count: 4, color: 'bg-error' },
-    { label: 'Structure', count: 2, color: 'bg-amber-500' },
-    { label: 'Marks', count: 3, color: 'bg-error' },
-    { label: 'Syllabus', count: 2, color: 'bg-amber-500' },
-    { label: 'Logical', count: 1, color: 'bg-error' },
-  ];
+export default function ErrorBreakdownChart({ categories }) {
 
   const maxCount = Math.max(...categories.map(c => c.count));
 
   return (
     <div className="mb-10 bg-card rounded-2xl shadow-sm border border-border p-8">
       <h2 className="text-2xl font-bold text-foreground mb-8">Error Breakdown by Category</h2>
-      
+
       <div className="space-y-6">
         {categories.map((category, index) => (
           <div key={index}>

@@ -1,27 +1,4 @@
-export default function PriorityFixes() {
-  const fixes = [
-    {
-      id: 1,
-      title: 'Total marks tally error',
-      description: 'Paper adds up to 95 but total says 100',
-      category: 'Marks',
-      severity: 'critical'
-    },
-    {
-      id: 2,
-      title: 'Question numbering jump',
-      description: 'Question numbering jumps from Q5 to Q7',
-      category: 'Structure',
-      severity: 'warning'
-    },
-    {
-      id: 3,
-      title: 'MCQ with multiple correct answers',
-      description: 'Q6 has two correct options (B and D)',
-      category: 'Logical',
-      severity: 'critical'
-    }
-  ];
+export default function PriorityFixes({ fixes = [] }) {
 
   const getSeverityColor = (severity) => {
     if (severity === 'critical') return 'text-error bg-red-50 border-error';
@@ -36,9 +13,8 @@ export default function PriorityFixes() {
         {fixes.map((fix) => (
           <div
             key={fix.id}
-            className={`bg-card rounded-xl border-l-4 ${
-              fix.severity === 'critical' ? 'border-l-error' : 'border-l-amber-500'
-            } shadow-sm border border-border p-5`}
+            className={`bg-card rounded-xl border-l-4 ${fix.severity === 'critical' ? 'border-l-error' : 'border-l-amber-500'
+              } shadow-sm border border-border p-5`}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">

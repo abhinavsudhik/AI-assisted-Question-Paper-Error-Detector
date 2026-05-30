@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import HealthScoreCard from '@/components/report/HealthScoreCard';
 import StatsGrid from '@/components/report/StatsGrid';
@@ -11,6 +12,8 @@ import CleanQuestions from '@/components/report/CleanQuestions';
 import ActionButtons from '@/components/report/ActionButtons';
 
 export default function ReportPage() {
+  const router = useRouter();
+  const [reportData, setReportData] = useState(null);
   const [expandedSections, setExpandedSections] = useState({
     language: true,
     structure: false,
@@ -19,6 +22,15 @@ export default function ReportPage() {
     logical: false,
   });
 
+  useEffect(() => {
+    const stored = localStorage.getItem('reportData');
+    if (!stored) {
+      router.push('/');
+      return;
+    }
+    setReportData(JSON.parse(stored));
+  }, []);
+
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -26,10 +38,12 @@ export default function ReportPage() {
     }));
   };
 
+  if (!reportData) return null;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      
+
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-6 py-12">
           {/* Page Header */}
@@ -44,26 +58,30 @@ export default function ReportPage() {
 
           {/* Top Summary Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-            <HealthScoreCard />
+            <HealthScoreCard score={reportData.healthScore} verdict={reportData.verdict} />
             <div className="lg:col-span-2">
-              <StatsGrid />
+              <StatsGrid totalErrors={reportData.totalErrors}
+                critical={reportData.critical}
+                warnings={reportData.warnings}
+                suggestions={reportData.suggestions} />
             </div>
           </div>
 
           {/* Priority Fixes */}
-          <PriorityFixes />
+          <PriorityFixes fixes={reportData.priorityFixes} />
 
           {/* Error Breakdown Chart */}
-          <ErrorBreakdownChart />
+          <ErrorBreakdownChart categories={reportData.errorBreakdown} />
 
           {/* Error Detail Sections */}
-          <ErrorSections 
+          <ErrorSections
+            errorCategories={reportData.errorCategories}
             expandedSections={expandedSections}
             toggleSection={toggleSection}
           />
 
           {/* Clean Questions */}
-          <CleanQuestions />
+          <CleanQuestions cleanQuestions={reportData.cleanQuestions} />
 
           {/* Action Buttons */}
           <ActionButtons />

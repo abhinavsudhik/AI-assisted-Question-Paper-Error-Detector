@@ -1,5 +1,4 @@
-export default function HealthScoreCard() {
-  const score = 72;
+export default function HealthScoreCard({ score, verdict }) {
   const maxScore = 100;
   const percentage = (score / maxScore) * 100;
 
@@ -11,9 +10,9 @@ export default function HealthScoreCard() {
   };
 
   const getStatusBadge = () => {
-    if (score >= 80) return { text: 'Good', color: 'bg-success text-white' };
-    if (score >= 60) return { text: 'Needs Revision', color: 'bg-error text-white' };
-    return { text: 'Critical', color: 'bg-error text-white' };
+    if (score >= 80) return { text: verdict, color: 'bg-success text-white' };
+    if (score >= 60) return { text: verdict, color: 'bg-error text-white' };
+    return { text: verdict, color: 'bg-error text-white' };
   };
 
   const status = getStatusBadge();
@@ -21,7 +20,7 @@ export default function HealthScoreCard() {
   return (
     <div className="bg-card rounded-2xl shadow-sm border border-border p-8">
       <p className="text-gray-600 text-sm font-medium mb-6">Paper Health Score</p>
-      
+
       {/* Score Circle */}
       <div className="flex flex-col items-center justify-center mb-8">
         <div className="relative w-32 h-32 mb-4">
