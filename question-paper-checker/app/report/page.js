@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
 import HealthScoreCard from '@/components/report/HealthScoreCard';
 import StatsGrid from '@/components/report/StatsGrid';
 import PriorityFixes from '@/components/report/PriorityFixes';
@@ -41,11 +40,8 @@ export default function ReportPage() {
   if (!reportData) return null;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
-
-      <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-6 py-12">
+    <main className="flex-1">
+      <div className="max-w-6xl mx-auto px-6 py-12">
           {/* Page Header */}
           <div className="mb-12">
             <h1 className="text-4xl font-bold text-foreground mb-2 text-balance">
@@ -87,6 +83,5 @@ export default function ReportPage() {
           <ActionButtons />
         </div>
       </main>
-    </div>
   );
 }
