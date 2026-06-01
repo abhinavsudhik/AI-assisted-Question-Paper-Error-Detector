@@ -1,27 +1,30 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import UploadBox from './UploadBox';
 import SyllabusTabs from './SyllabusTabs';
 import QuestionPatternInput from './QuestionPatternInput';
+import Link from 'next/link';
 
 export default function InputForm() {
   const router = useRouter();
+  const supabase = createClient();
+  const [user, setUser] = useState(null);
   const [questionPaperFile, setQuestionPaperFile] = useState(null);
   const [syllabusValue, setSyllabusValue] = useState(null);
   const [patternValue, setPatternValue] = useState(null);
   const [totalMarks, setTotalMarks] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+  }, []);
+
   const handleAnalyse = async () => {
-    if (!questionPaperFile) {
-      alert('Please upload a question paper');
-      return;
-    }
-    if (!totalMarks) {
-      alert('Please enter total marks');
-      return;
-    }
+    if (!questionPaperFile) { alert('Please upload a question paper'); return; }
+    if (!totalMarks) { alert('Please enter total marks'); return; }
+
     setIsAnalyzing(true);
     try {
       const formData = new FormData();
@@ -40,15 +43,24 @@ export default function InputForm() {
         formData.append('pattern', JSON.stringify(patternValue));
       }
 
-      const response = await fetch('/api/analyse', {
-        method: 'POST',
-        body: formData,
-      });
-
+      const response = await fetch('/api/analyse', { method: 'POST', body: formData });
       if (!response.ok) throw new Error('Analysis failed');
 
       const result = await response.json();
-      localStorage.setItem('reportData', JSON.stringify(result.data));
+      const reportData = result.data;
+
+      localStorage.setItem('reportData', JSON.stringify(reportData));
+
+      if (user) {
+        const { error } = await supabase.from('analyses').insert({
+          user_id: user.id,
+          file_name: questionPaperFile.name,
+          total_marks: parseInt(totalMarks),
+          report: reportData,
+        });
+        if (error) console.error('Failed to save to history:', error.message);
+      }
+
       router.push('/report');
     } catch (error) {
       alert('Something went wrong. Please try again.');
@@ -60,6 +72,22 @@ export default function InputForm() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-border p-8">
+      {!user && (
+        <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <svg className="w-5 h-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">Sign in</span> to save your analyses and access history
+            </p>
+          </div>
+          <Link href="/auth" className="text-sm font-semibold text-primary hover:underline shrink-0">
+            Sign in →
+          </Link>
+        </div>
+      )}
+
       <div className="space-y-8">
         <div>
           <label className="block text-sm font-semibold text-foreground mb-4">
@@ -72,14 +100,10 @@ export default function InputForm() {
             isLarge={true}
           />
         </div>
-
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-4">
-            Syllabus
-          </label>
+          <label className="block text-sm font-semibold text-foreground mb-4">Syllabus</label>
           <SyllabusTabs onSyllabusChange={setSyllabusValue} />
         </div>
-
         <div>
           <label htmlFor="totalMarks" className="block text-sm font-semibold text-foreground mb-2">
             Total Marks <span className="text-error">*</span>
@@ -94,17 +118,13 @@ export default function InputForm() {
             className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-sans"
           />
         </div>
-
         <div>
           <QuestionPatternInput onPatternChange={setPatternValue} />
         </div>
-
         <button
           onClick={handleAnalyse}
           disabled={isAnalyzing}
-          className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all ${isAnalyzing
-              ? 'bg-primary/80 opacity-80 cursor-not-allowed'
-              : 'bg-primary hover:bg-opacity-90 active:scale-95'
+          className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all ${isAnalyzing ? 'bg-primary/80 opacity-80 cursor-not-allowed' : 'bg-primary hover:bg-opacity-90 active:scale-95'
             }`}
         >
           {isAnalyzing ? 'Analysing...' : 'Analyse Paper'}
