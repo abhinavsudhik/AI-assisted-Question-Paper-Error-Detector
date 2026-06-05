@@ -2,6 +2,13 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 
 export async function middleware(request) {
+
+    // Debug — remove after fix
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error('Missing Supabase env vars');
+        return NextResponse.next();
+    }
+
     let supabaseResponse = NextResponse.next({ request });
 
     const supabase = createServerClient(
@@ -13,7 +20,9 @@ export async function middleware(request) {
                     return request.cookies.getAll();
                 },
                 setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+                    cookiesToSet.forEach(({ name, value }) =>
+                        request.cookies.set(name, value)
+                    );
                     supabaseResponse = NextResponse.next({ request });
                     cookiesToSet.forEach(({ name, value, options }) =>
                         supabaseResponse.cookies.set(name, value, options)
@@ -23,20 +32,25 @@ export async function middleware(request) {
         }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
 
-    // Protect /history — redirect to /auth if not signed in
-    if (!user && request.nextUrl.pathname.startsWith('/history')) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/auth';
-        return NextResponse.redirect(url);
-    }
+        if (!user && request.nextUrl.pathname.startsWith('/history')) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/auth';
+            return NextResponse.redirect(url);
+        }
 
-    // Redirect signed-in users away from /auth
-    if (user && request.nextUrl.pathname === '/auth') {
-        const url = request.nextUrl.clone();
-        url.pathname = '/';
-        return NextResponse.redirect(url);
+        if (user && request.nextUrl.pathname === '/auth') {
+            const url = request.nextUrl.clone();
+            url.pathname = '/';
+            return NextResponse.redirect(url);
+        }
+
+    } catch (error) {
+        console.error('Middleware error:', error.message);
+        // Don't crash — just let the request through
+        return NextResponse.next();
     }
 
     return supabaseResponse;
