@@ -44,26 +44,15 @@ export default function InputForm() {
       }
 
       const response = await fetch('/api/analyse', { method: 'POST', body: formData });
-      if (!response.ok) throw new Error('Analysis failed');
-
-      const result = await response.json();
-      const reportData = result.data;
-
-      localStorage.setItem('reportData', JSON.stringify(reportData));
-
-      if (user) {
-        const { error } = await supabase.from('analyses').insert({
-          user_id: user.id,
-          file_name: questionPaperFile.name,
-          total_marks: parseInt(totalMarks),
-          report: reportData,
-        });
-        if (error) console.error('Failed to save to history:', error.message);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Analysis failed');
       }
 
-      router.push('/report');
+      const result = await response.json();
+      router.push(`/report?id=${result.jobId}`);
     } catch (error) {
-      alert('Something went wrong. Please try again.');
+      alert(error.message || 'Something went wrong. Please try again.');
       console.error(error);
     } finally {
       setIsAnalyzing(false);

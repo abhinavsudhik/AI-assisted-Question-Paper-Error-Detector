@@ -3,6 +3,14 @@
 import { useState } from 'react';
 import ErrorCategory from './ErrorCategory';
 
+const CATEGORY_TITLES = {
+  language: 'Language & Grammar',
+  structure: 'Structure & Formatting',
+  marks: 'Marks Allocation',
+  syllabus: 'Syllabus Alignment',
+  logical: 'Logical & Fact Errors',
+};
+
 export default function ErrorSections({ errorCategories, expandedSections, toggleSection }) {
   return (
     <div className="mb-10">
@@ -12,7 +20,7 @@ export default function ErrorSections({ errorCategories, expandedSections, toggl
           <ErrorCategory
             key={key}
             id={key}
-            title={data.title}
+            title={data.title || CATEGORY_TITLES[key] || (key.charAt(0).toUpperCase() + key.slice(1))}
             count={data.count}
             severity={data.severity}
             items={data.items}

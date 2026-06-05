@@ -37,8 +37,7 @@ export default function HistoryPage() {
     };
 
     const handleLoadReport = (analysis) => {
-        localStorage.setItem('reportData', JSON.stringify(analysis.report));
-        router.push('/report');
+        router.push(`/report?id=${analysis.id}`);
     };
 
     const handleDelete = async (id, e) => {
